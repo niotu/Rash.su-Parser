@@ -70,7 +70,7 @@ data = [['Туника "Линда" сухая роза ', 'rash.su/files/catalo
 
 
 def write(mas):
-    result = open('outfile.csv', mode='a', encoding='utf8')
+    result = open('clothes.csv', mode='a', encoding='utf8')
     for line in mas[0]:
         for i in range(len(line[-1])):
             res = [line[0], line[1], line[2], line[3][i], line[4][i]]

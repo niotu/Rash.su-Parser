@@ -1,7 +1,6 @@
 import requests
 import lxml.html
 from time import sleep
-import xlsxwriter
 
 base = 'https://rash.su/tricotag/tuniki/tunika-quot-linda-quot-suhaya-roza-2043'
 url0 = 'https://rash.su'
@@ -22,8 +21,21 @@ def get_url(url: str):
 
 def get_urls_form_catalogue(url):
     soup = get_url(url)
-    prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_1"]/li[contains(@class, menu_li_)]/a/@href')
-    return prefixes
+    prefixes1 = []
+    tr_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_1"]/li[contains(@class, menu_li_)]/a/@href')
+    bs_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_3"]/li[contains(@class, menu_li_)]/a/@href')
+    uw_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_33"]/li[contains(@class, menu_li_)]/a/@href')
+    sale_prefixes = soup.xpath('//li[@class = "menu_top_30  menu_li_30"]/a/@href')
+
+    for elem in tr_prefixes:
+        prefixes1.append(elem)
+    for elem in uw_prefixes:
+        prefixes1.append(elem)
+    for elem in sale_prefixes:
+        prefixes1.append(elem)
+
+    prefixes2 = bs_prefixes
+    return prefixes1, prefixes2[1:]
 
 
 def get_urls_from_page(prefix):
@@ -32,7 +44,7 @@ def get_urls_from_page(prefix):
     urls = soup.xpath('//div[@class = "catalog_all_list"]//a/@href')
     mas = []
     for elem in urls:
-        if f'/tricotag{prefix}' in elem:
+        if prefix in elem:
             mas.append(url0 + elem)
     return mas
 
@@ -45,7 +57,7 @@ def do_item(url):
     descr = soup.xpath('//div[contains(@class, "catalog_addonfield_sostav")]/div/text()')
     if sizes:
         mas = soup.xpath('//td/text()')
-        img_url = 'rash.su/' + soup.xpath(f'//img[@id = "img_01"]/@src')[0]
+        img_url = 'https://rash.su/' + soup.xpath(f'//div[@class = "catalog_photos_area"]//img/@src')[0]
         prices = []
         c = 1
         for _ in sizes:
@@ -57,9 +69,20 @@ def do_item(url):
         return 'no_order'
 
 
-def process():
-    prefixes = get_urls_form_catalogue(url0)
-    allres = []
+def write(mas, filename):
+    result = open(filename, mode='a', encoding='utf8')
+    for line in mas:
+        for i in range(len(line[-1])):
+            res = [line[0], line[1], line[2], line[3][i], line[4][i]]
+            for elem in res:
+                result.write(str(elem) + (";" if res.index(elem) < len(res) - 1 else '\n'))
+    result.close()
+
+
+def process(filename, prefixes):
+    file = open(filename, mode='a', encoding='utf8')
+    file.truncate()
+    file.close()
     for prefix in prefixes:
         urls = get_urls_from_page(prefix)
         result = []
@@ -71,17 +94,11 @@ def process():
             if item != "no_order":
                 result.append(item)
         print(*result, sep='\n')
-        write(result)
+        write(result, filename)
 
 
-def write(mas):
-    result = open('outfile.csv', mode='a', encoding='utf8')
-    for line in mas:
-        for i in range(len(line[-1])):
-            res = [line[0], line[1], line[2], line[3][i], line[4][i]]
-            for elem in res:
-                result.write(str(elem) + (";" if res.index(elem) < len(res) - 1 else '\n'))
-    result.close()
+prefixes1, prefixes2 = get_urls_form_catalogue(url0)
 
 
-process()
+process('clothes.csv', prefixes1)
+process('bed-sheets.csv', prefixes2)
