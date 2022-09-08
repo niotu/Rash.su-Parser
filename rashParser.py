@@ -25,7 +25,7 @@ def get_urls_form_catalogue(url):
     tr_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_1"]/li[contains(@class, menu_li_)]/a/@href')
     bs_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_3"]/li[contains(@class, menu_li_)]/a/@href')
     uw_prefixes = soup.xpath('//ul[@class = "in_menu in_menu_10  menu_ul_33"]/li[contains(@class, menu_li_)]/a/@href')
-    sale_prefixes = soup.xpath('//li[@class = "menu_top_30  menu_li_30"]/a/@href')
+    sale_prefixes = soup.xpath('//li[contains(@class, "menu_top_30  menu_li_30")]/a/@href')
 
     for elem in tr_prefixes:
         prefixes1.append(elem)
@@ -35,7 +35,7 @@ def get_urls_form_catalogue(url):
         prefixes1.append(elem)
 
     prefixes2 = bs_prefixes
-    return prefixes1, prefixes2[1:]
+    return prefixes1, prefixes2
 
 
 def get_urls_from_page(prefix):
@@ -69,8 +69,11 @@ def do_item(url):
         return 'no_order'
 
 
+encoding = 'windows-1251'
+
+
 def write(mas, filename):
-    result = open(filename, mode='a', encoding='utf8')
+    result = open(filename, mode='a', encoding=encoding)
     for line in mas:
         for i in range(len(line[-1])):
             res = [line[0], line[1], line[2], line[3][i], line[4][i]]
@@ -80,7 +83,7 @@ def write(mas, filename):
 
 
 def process(filename, prefixes):
-    file = open(filename, mode='a', encoding='utf8')
+    file = open(filename, mode='a', encoding=encoding)
     file.truncate()
     file.close()
     for prefix in prefixes:
@@ -98,6 +101,8 @@ def process(filename, prefixes):
 
 
 prefixes1, prefixes2 = get_urls_form_catalogue(url0)
+
+
 
 
 process('clothes.csv', prefixes1)
